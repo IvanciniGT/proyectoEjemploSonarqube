@@ -5,19 +5,29 @@ pipeline {
     }
 
     stages {
-        stage('compile') {
+        stage('Compilacion') {
             steps {
-                sh 'mvn clean test'
+                sh 'mvn clean compile'
             }
         }
-        stage('build && SonarQube analysis') {
+        stage('Compilacion de pruebas unitarias') {
+            steps {
+                sh 'mvn test-compile'
+            }
+        }
+        stage('Ejecución de pruebas unitarias') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Lanzar el analisis de Sonarqube') {
             steps {
                 withSonarQubeEnv('sonarqube') {
                     sh 'mvn sonar:sonar'
                 }
             }
         }
-        stage("Quality Gate") {
+        stage("Esperar la respuesta del Sonarqube") {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
                     waitForQualityGate abortPipeline: true
