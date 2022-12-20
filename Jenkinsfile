@@ -18,8 +18,13 @@ pipeline {
         stage('Ejecución de pruebas unitarias') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'mvn test jacoco:report'
+                    sh 'mvn test'
                 }
+            }
+        }
+        stage('Generar informe de cobertura') {
+            steps {
+                sh 'mvn jacoco:report'
             }
         }
         stage('Lanzar el analisis de Sonarqube') {
