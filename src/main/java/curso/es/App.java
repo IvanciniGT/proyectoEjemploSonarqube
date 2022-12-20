@@ -15,5 +15,5 @@ public class App {
     }
     public static double Mitad(double numero) {
         return numero/4;
-    }
+    } 
 }
