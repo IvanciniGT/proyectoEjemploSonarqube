@@ -1,19 +1,19 @@
 pipeline {
     agent any
+    tools {
+      maven 'MiMaven'
+    }
+
     stages {
         stage('compile') {
             steps {
-                withMaven(maven:'MiMaven') {
-                    sh 'mvn clean test'
-                }
+                sh 'mvn clean test'
             }
         }
         stage('build && SonarQube analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    withMaven(maven:'MiMaven') {
-                        sh 'mvn sonar:sonar'
-                    }
+                    sh 'mvn sonar:sonar'
                 }
             }
         }
