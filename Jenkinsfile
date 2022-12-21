@@ -15,29 +15,38 @@ pipeline {
                 sh 'mvn test-compile'
             }
         }
-        stage('Ejecución de pruebas unitarias') {
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'mvn test'
+        stage('Pruebas') {
+            stages{
+                stage('Ejecución de pruebas unitarias') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh 'mvn test'
+                        }
+                    }
+                    post{
+                        always {
+                            sh 'mvn jacoco:report'
+                        }
+                    }
+                }
+                stage('Lanzar el analisis de Sonarqube') {
+                    steps {
+                        withSonarQubeEnv('sonarqube') {
+                            sh 'mvn sonar:sonar'
+                        }
+                    }
+                }
+                stage("Esperar la respuesta del Sonarqube") {
+                    steps {
+                        timeout(time: 1, unit: 'HOURS') {
+                            waitForQualityGate abortPipeline: true
+                        }
+                    }
                 }
             }
-        }
-        stage('Generar informe de cobertura') {
-            steps {
-                sh 'mvn jacoco:report'
-            }
-        }
-        stage('Lanzar el analisis de Sonarqube') {
-            steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh 'mvn sonar:sonar'
-                }
-            }
-        }
-        stage("Esperar la respuesta del Sonarqube") {
-            steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: true
+            post{
+                failure {
+                    error 'Fallo en los test unitarios'
                 }
             }
         }
